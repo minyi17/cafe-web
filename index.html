@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>綠意蔬食餐廳 - 線上點餐、訂位與視覺化後台管理</title>
+  <style>
+    /* ==========================================
+       1. Global Design Tokens & Resets
+       ========================================== */
+    :root {
+      --primary: #2d5a27;          /* Forest Green */
+      --primary-hover: #1e3f1a;
+      --primary-light: #e8f2e6;
+      --secondary: #d4a373;        /* Oat Milk Warm Tone */
+      --secondary-light: #faedcd;
+      --bg-main: #f8f9fa;          /* Soft White/Gray */
+      --card-bg: #ffffff;
+      --text-main: #2b2b2b;
+      --text-muted: #6c757d;
+      --border-color: #e2e8f0;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.12);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --transition: all 0.25s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ==========================================
+       2. Header & Navigation
+       ========================================== */
+    header {
+      background-color: var(--card-bg);
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .brand span {
+      color: var(--secondary);
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      padding: 8px 16px;
+      border: none;
+      background: none;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.95rem;
+    }
+
+    .nav-btn:hover {
+      background-color: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .nav-btn.active {
+      background-color: var(--primary);
+      color: #fff;
+    }
+
+    .cart-badge {
+      background-color: #e53e3e;
+      color: white;
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 10px;
+      margin-left: 4px;
+    }
+
+    .role-switcher {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-tag {
+      font-size: 0.85rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .user-tag.guest {
+      background-color: #edf2f7;
+      color: #4a5568;
+    }
+
+    .user-tag.admin {
+      background-color: #feebc8;
+      color: #c05621;
+    }
+
+    /* ==========================================
+       3. Common UI Components & Modals
+       ========================================== */
+    .container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 24px;
+      flex: 1;
+      width: 100%;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.95rem;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+
+    .btn-outline:hover {
+      background-color: #f7fafc;
+    }
+
+    .btn-danger {
+      background-color: #e53e3e;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: #c53030;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      color: #2d3748;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      transition: var(--transition);
+      background-color: #fff;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.15);
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.55);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      background-color: white;
+      border-radius: var(--radius);
+      width: 90%;
+      max-width: 520px;
+      padding: 24px;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-20px);
+      transition: var(--transition);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.active .modal {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .alert-banner {
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .alert-info {
+      background-color: var(--primary-light);
+      border-left: 4px solid var(--primary);
+      color: var(--primary-hover);
+    }
+
+    .alert-warning {
+      background-color: #fffaf0;
+      border-left: 4px solid #dd6b20;
+      color: #c05621;
+    }
+
+    .alert-danger {
+      background-color: #fff5f5;
+      border-left: 4px solid #e53e3e;
+      color: #c53030;
+    }
+
+    /* Views Switcher */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================
+       4. Menu Tab
+       ========================================== */
+    .category-filter {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+
+    .filter-btn {
+      padding: 8px 18px;
+      border: 1px solid var(--border-color);
+      background-color: white;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: var(--transition);
+      color: var(--text-main);
+    }
+
+    .filter-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .filter-btn.active {
+      background-color: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .menu-card {
+      background-color: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: var(--transition);
+      border: 1px solid var(--border-color);
+    }
+
+    .menu-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-4px);
+    }
+
+    .card-category-tag {
+      font-size: 0.75rem;
+      background-color: var(--secondary-light);
+      color: #8c5828;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--primary);
+    }
+
+    .card-price {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 12px;
+    }
+
+    .combo-section {
+      background-color: #fcfbf9;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 14px;
+      border: 1px dashed var(--secondary);
+    }
+
+    .combo-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #2d3748;
+    }
+
+    .combo-options {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid #e2e8f0;
+      display: none;
+      gap: 8px;
+      flex-direction: column;
+    }
+
+    .combo-options.active {
+      display: flex;
+    }
+
+    .combo-select-group {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .combo-select-group select {
+      padding: 6px;
+      font-size: 0.85rem;
+      border-radius: 4px;
+      border: 1px solid #cbd5e0;
+      background: white;
+      flex: 1;
+    }
+
+    /* ==========================================
+       5. Cart Tab
+       ========================================== */
+    .cart-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    .cart-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .cart-table th, .cart-table td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .cart-table th {
+      background-color: var(--primary-light);
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .cart-summary-card {
+      background: white;
+      padding: 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+
+    .summary-row.total {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary);
+      border-top: 2px solid var(--border-color);
+      padding-top: 12px;
+      margin-top: 12px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--primary);
+      background-color: var(--primary-light);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 16px;
+      margin-top: 6px;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    /* ==========================================
+       6. Reservation Tab
+       ========================================== */
+    .reservation-card {
+      max-width: 650px;
+      margin: 0 auto;
+      background: white;
+      padding: 32px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* ==========================================
+       7. Admin Dashboard Tab
+       ========================================== */
+    .admin-controls {
+      background: white;
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .toggle-switch input {
+      display: none;
+    }
+
+    .slider {
+      position: relative;
+      width: 50px;
+      height: 26px;
+      background-color: #cbd5e0;
+      border-radius: 26px;
+      transition: var(--transition);
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: var(--transition);
+    }
+
+    input:checked + .slider {
+      background-color: var(--primary);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    .dashboard-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      border-left: 5px solid var(--primary);
+    }
+
+    .stat-card.secondary {
+      border-left-color: var(--secondary);
+    }
+
+    .stat-title {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .admin-section {
+      background: white;
+      padding: 24px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 28px;
+    }
+
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .data-table th, .data-table td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .data-table th {
+      background-color: #f7fafc;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* Dining Notice Styling */
+    .notice-list {
+      list-style-type: none;
+      margin: 16px 0;
+    }
+
+    .notice-item {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .notice-item:last-child {
+      border-bottom: none;
+    }
+
+    .notice-zh {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .notice-en {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .header-container {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .cart-layout {
+        grid-template-columns: 1fr;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      .nav-tabs {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Section -->
+  <header>
+    <div class="header-container">
+      <div class="brand">
+        🌿 <span>綠意蔬食</span> Bistro
+      </div>
+      <nav class="nav-tabs">
+        <button class="nav-btn active" onclick="switchTab('menu')">🍽️ 線上菜單</button>
+        <button class="nav-btn" onclick="switchTab('cart')">
+          🛒 購物車 <span class="cart-badge" id="cartCount">0</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('reservation')">📅 線上訂位</button>
+        <button class="nav-btn" id="adminTabBtn" onclick="handleAdminTabClick()" style="display: none;">⚙️ 後台管理</button>
+      </nav>
+      <div class="role-switcher">
+        <span class="user-tag guest" id="roleBadge">👤 顧客 (Guest)</span>
+        <button class="btn btn-outline btn-sm" id="roleBtn" onclick="openLoginModal()">🔑 管理員登入</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="container">
+
+    <!-- 1. Menu Tab -->
+    <section id="menuTab" class="tab-content active">
+      <h2 style="margin-bottom: 16px; color: var(--primary);">美味蔬食菜單</h2>
+      
+      <!-- Category Filter Tabs -->
+      <div class="category-filter">
+        <button class="filter-btn active" onclick="filterCategory('All', this)">全部分類 (All)</button>
+        <button class="filter-btn" onclick="filterCategory('Noodles', this)">🍝 麵類 (Noodles)</button>
+        <button class="filter-btn" onclick="filterCategory('Rice', this)">🍛 飯類 (Rice)</button>
+        <button class="filter-btn" onclick="filterCategory('Drinks', this)">🍹 飲料 (Drinks)</button>
+        <button class="filter-btn" onclick="filterCategory('Desserts', this)">🍰 甜點 (Desserts)</button>
+      </div>
+
+      <div class="menu-grid" id="menuGrid">
+        <!-- Rendered dynamically by JS -->
+      </div>
+    </section>
+
+    <!-- 2. Cart & Checkout Tab -->
+    <section id="cartTab" class="tab-content">
+      <h2 style="margin-bottom: 16px; color: var(--primary);">您的購物車</h2>
+      
+      <!-- Notice Banner -->
+      <div class="alert-banner alert-info">
+        💡 備註：【不吃蔥蒜蛋奶需備註說明，冷飲皆已去冰】
+      </div>
+
+      <div class="cart-layout">
+        <div>
+          <table class="cart-table">
+            <thead>
+              <tr>
+                <th>餐點品項</th>
+                <th>套餐/加購內容</th>
+                <th>單價</th>
+                <th>數量</th>
+                <th>小計</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="cartTableBody">
+              <!-- Rendered dynamically by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="cart-summary-card">
+          <h3 style="margin-bottom: 16px; color: var(--primary);">訂單小結</h3>
+          
+          <label class="checkbox-label">
+            <input type="checkbox" id="nsysuDiscount" onchange="renderCart()">
+            🎓 中山大學教職員生（免收 5% 服務費）
+          </label>
+
+          <div class="form-group">
+            <label for="cartRemark">特別備註：</label>
+            <input type="text" id="cartRemark" class="form-control" placeholder="例如：不吃蔥蒜蛋奶...">
+          </div>
+
+          <div class="form-group">
+            <label>付款方式：</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" name="paymentMethod" value="現金付款" checked> 💵 現金付款
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="paymentMethod" value="Line Pay"> 💚 Line Pay
+              </label>
+            </div>
+          </div>
+
+          <div class="summary-row">
+            <span>小計</span>
+            <span id="cartSubtotal">NT$ 0</span>
+          </div>
+          <div class="summary-row">
+            <span>5% 服務費</span>
+            <span id="cartServiceFee">NT$ 0</span>
+          </div>
+
+          <div class="summary-row total">
+            <span>總計金額</span>
+            <span id="cartTotal">NT$ 0</span>
+          </div>
+
+          <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="checkout()">送出訂單並結帳</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Reservation Tab -->
+    <section id="reservationTab" class="tab-content">
+      <!-- Holiday Closure Notice (Hidden by default) -->
+      <div id="holidayBanner" class="alert-banner alert-danger" style="display: none;">
+        ⚠️ 目前節假日不開放線上訂位，如需預約請直接撥打電話聯繫店家！<br>📞 訂位專線：07-1234567
+      </div>
+
+      <div id="reservationFormCard" class="reservation-card">
+        <!-- Business Hours Reminder -->
+        <div class="alert-banner alert-warning">
+          ⏰ 店內營業時間提示：晚上 7:00 為最後點餐時間
+        </div>
+
+        <h2 style="margin-bottom: 20px; color: var(--primary); text-align: center;">預約您的美好蔬食餐桌</h2>
+
+        <form id="reservationForm" onsubmit="handleReservationSubmit(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="resName">訂位人姓名 *</label>
+              <input type="text" id="resName" class="form-control" required placeholder="請輸入姓名">
+            </div>
+            <div class="form-group">
+              <label for="resPhone">聯絡電話 *</label>
+              <input type="tel" id="resPhone" class="form-control" required placeholder="09xx-xxx-xxx">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="resDate">預約日期 *</label>
+              <input type="date" id="resDate" class="form-control" required onchange="updateAvailableTimes()">
+            </div>
+            <div class="form-group">
+              <label for="resTime">預約時間 *</label>
+              <select id="resTime" class="form-control" required>
+                <!-- Generated dynamically based on date selection -->
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="resGuests">用餐人數 *</label>
+            <select id="resGuests" class="form-control" required>
+              <option value="1位">1位</option>
+              <option value="2位" selected>2位</option>
+              <option value="4位">4位</option>
+              <option value="6位以上">6位以上</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="resNotes">特別需求</label>
+            <textarea id="resNotes" class="form-control" rows="3" placeholder="如：1人吃全素/需要兒童座椅"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">確認提交預約</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- 4. Admin Dashboard Tab -->
+    <section id="adminTab" class="tab-content">
+      <div class="admin-controls">
+        <h2 style="color: var(--primary);">⚙️ 管理員後台控制台</h2>
+        <!-- Holiday Reservation Toggle -->
+        <label class="toggle-switch">
+          <input type="checkbox" id="holidayToggle" onchange="toggleHolidayMode(this.checked)">
+          <span class="slider"></span>
+          <span style="font-weight: 600; font-size: 0.95rem;">關閉節假日線上訂位</span>
+        </label>
+      </div>
+
+      <!-- Today's Overview Cards -->
+      <div class="dashboard-cards">
+        <div class="stat-card">
+          <div class="stat-title">今日總訂位桌數（筆數）</div>
+          <div class="stat-value" id="statTotalTables">0 筆</div>
+        </div>
+        <div class="stat-card secondary">
+          <div class="stat-title">今日預約總人數</div>
+          <div class="stat-value" id="statTotalGuests">0 人</div>
+        </div>
+      </div>
+
+      <!-- Reservation List -->
+      <div class="admin-section">
+        <div class="section-title">📅 顧客訂位紀錄列表</div>
+        <div style="overflow-x: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>姓名</th>
+                <th>電話</th>
+                <th>預約日期</th>
+                <th>預約時間</th>
+                <th>人數</th>
+                <th>特別需求</th>
+              </tr>
+            </thead>
+            <tbody id="adminResTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Menu Item Management (CRUD) -->
+      <div class="admin-section">
+        <div class="section-title">
+          <span>🍔 菜單品項管理</span>
+          <button class="btn btn-primary btn-sm" onclick="openMenuModal()">+ 新增品項</button>
+        </div>
+        <div style="overflow-x: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>分類</th>
+                <th>餐點名稱</th>
+                <th>價格</th>
+                <th>描述</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="adminMenuTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Customer Order History List -->
+      <div class="admin-section">
+        <div class="section-title">📦 顧客點餐訂單紀錄列表</div>
+        <div style="overflow-x: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>訂單時間/編號</th>
+                <th>訂購餐點明細</th>
+                <th>總金額</th>
+                <th>付款方式</th>
+                <th>特別備註</th>
+              </tr>
+            </thead>
+            <tbody id="adminOrderTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================
+     Modals Area
+     ========================================== -->
+
+  <!-- Announcement Modal on Startup -->
+  <div class="modal-overlay active" id="noticeModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">🌿 綠意蔬食 - 用餐須知 / Dining Notice</div>
+      </div>
+      <ul class="notice-list">
+        <li class="notice-item">
+          <div class="notice-zh">1. 點餐後請至櫃檯結帳</div>
+          <div class="notice-en">Please pay at the counter after ordered.</div>
+        </li>
+        <li class="notice-item">
+          <div class="notice-zh">2. 如有忌口不吃蔥蒜、蛋奶請告知櫃檯</div>
+          <div class="notice-en">Please inform our staff of any dietary restrictions. (e.g., alliums, eggs, dairy)</div>
+        </li>
+        <li class="notice-item">
+          <div class="notice-zh">3. 店內禁止外食</div>
+          <div class="notice-en">No outside food or drinks.</div>
+        </li>
+        <li class="notice-item">
+          <div class="notice-zh">4. 本店均收 5% 服務費，中山教職員和學生免收</div>
+          <div class="notice-en">A 5% service charge applies to all guests, except NSYSU staff and students.</div>
+        </li>
+      </ul>
+      <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="closeNoticeModal()">我已了解並同意 / I Understand & Agree</button>
+    </div>
+  </div>
+
+  <!-- Admin Login Modal -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">🔑 管理員身分登入</div>
+        <button class="close-btn" onclick="closeLoginModal()">&times;</button>
+      </div>
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="adminAccount">帳號</label>
+          <input type="text" id="adminAccount" class="form-control" required placeholder="請輸入管理員帳號">
+        </div>
+        <div class="form-group">
+          <label for="adminPassword">密碼</label>
+          <input type="password" id="adminPassword" class="form-control" required placeholder="請輸入密碼">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">登入管理後台</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add/Edit Menu Item Modal -->
+  <div class="modal-overlay" id="menuModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="menuModalTitle">新增餐點品項</div>
+        <button class="close-btn" onclick="closeMenuModal()">&times;</button>
+      </div>
+      <form onsubmit="handleSaveMenuItem(event)">
+        <input type="hidden" id="editItemId">
+        <div class="form-group">
+          <label for="itemCategory">餐點分類 *</label>
+          <select id="itemCategory" class="form-control" required>
+            <option value="Noodles">麵類 (Noodles)</option>
+            <option value="Rice">飯類 (Rice)</option>
+            <option value="Drinks">飲料 (Drinks)</option>
+            <option value="Desserts">甜點 (Desserts)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="itemName">餐點名稱 *</label>
+          <input type="text" id="itemName" class="form-control" required placeholder="如：松露野菇奶油義大利麵">
+        </div>
+        <div class="form-group">
+          <label for="itemPrice">價格 (NT$) *</label>
+          <input type="number" id="itemPrice" class="form-control" min="0" required placeholder="例如：260">
+        </div>
+        <div class="form-group">
+          <label for="itemDesc">餐點描述</label>
+          <textarea id="itemDesc" class="form-control" rows="2" placeholder="請輸入美味餐點簡介..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">儲存品項</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    /* ==========================================
+       Application State
+       ========================================== */
+    let currentUserRole = 'Guest';
+    let isHolidayClosed = false;
+    let currentCategoryFilter = 'All';
+
+    // Category Name Mapping
+    const categoryNames = {
+      Noodles: "麵類",
+      Rice: "飯類",
+      Drinks: "飲料",
+      Desserts: "甜點"
+    };
+
+    // Default Menu Items
+    let menuItems = [
+      { id: 1, category: "Noodles", name: "松露野菇奶油義大利麵", price: 260, description: "濃郁白醬搭搭特選野生蘑菇與黑松露醬" },
+      { id: 2, category: "Noodles", name: "番茄香草蔬食松子麵", price: 240, description: "酸甜新鮮番茄熬煮高湯搭配烘焙香松子" },
+      { id: 3, category: "Rice", name: "薑黃蔬食燉飯", price: 280, description: "天然香料薑黃燉煮特選米與季節時蔬" },
+      { id: 4, category: "Rice", name: "泰式咖哩植物肉飯", price: 260, description: "微辣濃郁泰式椰汁咖哩佐多汁植物肉" },
+      { id: 5, category: "Drinks", name: "手作黑糖鮮奶茶", price: 80, description: "手工慢火熬煮黑糖，香醇濃郁" },
+      { id: 6, category: "Drinks", name: "鮮榨冷壓蘋果汁", price: 90, description: "100% 契作新鮮蘋果冷壓萃取" },
+      { id: 7, category: "Desserts", name: "靜岡抹茶巴斯克蛋糕", price: 120, description: "日本靜岡抹茶粉，入口即化抹香濃郁" },
+      { id: 8, category: "Desserts", name: "肉桂香草植物奶燕麥布丁", price: 100, description: "純植物燕麥奶製作，無負擔甜點" }
+    ];
+
+    // Shopping Cart
+    let cart = [];
+
+    // Reservation Database
+    let reservations = [
+      { id: 101, name: "陳大明", phone: "0912-345-678", date: getTodayString(), time: "12:00", guests: "2位", notes: "需要靠窗座位" },
+      { id: 102, name: "林小姐", phone: "0987-654-321", date: getTodayString(), time: "18:00", guests: "4位", notes: "1位需要兒童座椅，不吃蔥蒜" }
+    ];
+
+    // Order History Database
+    let orders = [
+      {
+        id: "ORD-20261018-01",
+        time: "2026/10/18 12:30",
+        items: [
+          { name: "松露野菇奶油義大利麵 (加套餐: 鮮採沙拉, 紅茶/冷)", price: 380, qty: 1 }
+        ],
+        subtotal: 380,
+        serviceFee: 19,
+        total: 399,
+        payment: "Line Pay",
+        remark: "無"
+      }
+    ];
+
+    /* ==========================================
+       Initialization
+       ========================================== */
+    document.addEventListener("DOMContentLoaded", () => {
+      setupDateMinAttribute();
+      renderMenu();
+      renderCart();
+      renderAdminDashboard();
+    });
+
+    function closeNoticeModal() {
+      document.getElementById("noticeModal").classList.remove("active");
+    }
+
+    function getTodayString() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // Set `min` attribute on date input to disable past dates
+    function setupDateMinAttribute() {
+      const dateInput = document.getElementById("resDate");
+      if (dateInput) {
+        const todayStr = getTodayString();
+        dateInput.min = todayStr;
+        dateInput.value = todayStr;
+        updateAvailableTimes();
+      }
+    }
+
+    // Generate time options between 11:00 and 18:30 (15-min intervals)
+    function updateAvailableTimes() {
+      const select = document.getElementById("resTime");
+      const selectedDate = document.getElementById("resDate").value;
+      select.innerHTML = "";
+
+      const todayStr = getTodayString();
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+
+      let startHour = 11;
+      let startMinute = 0;
+      const endHour = 18;
+      const endMinute = 30;
+
+      let validTimeCount = 0;
+
+      while (startHour < endHour || (startHour === endHour && startMinute <= endMinute)) {
+        const timeStr = `${String(startHour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}`;
+        
+        let isPastTime = false;
+        if (selectedDate === todayStr) {
+          if (startHour < currentHour || (startHour === currentHour && startMinute <= currentMinute)) {
+            isPastTime = true;
+          }
+        }
+
+        if (!isPastTime) {
+          const option = document.createElement("option");
+          option.value = timeStr;
+          option.textContent = timeStr;
+          select.appendChild(option);
+          validTimeCount++;
+        }
+
+        startMinute += 15;
+        if (startMinute >= 60) {
+          startMinute = 0;
+          startHour += 1;
+        }
+      }
+
+      if (validTimeCount === 0) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "今日營業時間已過";
+        select.appendChild(option);
+      }
+    }
+
+    /* ==========================================
+       Navigation & Auth
+       ========================================== */
+    function switchTab(tabName) {
+      if (tabName === 'admin' && currentUserRole !== 'Admin') {
+        openLoginModal();
+        return;
+      }
+
+      const buttons = document.querySelectorAll(".nav-btn");
+      buttons.forEach(btn => btn.classList.remove("active"));
+
+      const tabs = document.querySelectorAll(".tab-content");
+      tabs.forEach(t => t.classList.remove("active"));
+
+      if (tabName === 'menu') {
+        buttons[0].classList.add("active");
+        document.getElementById("menuTab").classList.add("active");
+      } else if (tabName === 'cart') {
+        buttons[1].classList.add("active");
+        document.getElementById("cartTab").classList.add("active");
+      } else if (tabName === 'reservation') {
+        buttons[2].classList.add("active");
+        document.getElementById("reservationTab").classList.add("active");
+      } else if (tabName === 'admin') {
+        if (document.getElementById("adminTabBtn")) {
+          document.getElementById("adminTabBtn").classList.add("active");
+        }
+        document.getElementById("adminTab").classList.add("active");
+        renderAdminDashboard();
+      }
+    }
+
+    function handleAdminTabClick() {
+      if (currentUserRole === 'Admin') {
+        switchTab('admin');
+      } else {
+        openLoginModal();
+      }
+    }
+
+    function openLoginModal() {
+      document.getElementById("loginModal").classList.add("active");
+    }
+
+    function closeLoginModal() {
+      document.getElementById("loginModal").classList.remove("active");
+    }
+
+    function handleLogin(event) {
+      event.preventDefault();
+      const acc = document.getElementById("adminAccount").value.trim();
+      const pwd = document.getElementById("adminPassword").value.trim();
+
+      if (acc === "admin" && pwd === "1234") {
+        currentUserRole = 'Admin';
+        document.getElementById("roleBadge").className = "user-tag admin";
+        document.getElementById("roleBadge").textContent = "⚙️ 管理員 (Admin)";
+        
+        const roleBtn = document.getElementById("roleBtn");
+        roleBtn.textContent = "🚪 登出管理員";
+        roleBtn.onclick = logoutAdmin;
+
+        document.getElementById("adminTabBtn").style.display = "inline-flex";
+
+        closeLoginModal();
+        alert("登入成功！已切換至管理員身分。");
+        switchTab('admin');
+      } else {
+        alert("帳號或密碼錯誤");
+      }
+    }
+
+    function logoutAdmin() {
+      currentUserRole = 'Guest';
+      document.getElementById("roleBadge").className = "user-tag guest";
+      document.getElementById("roleBadge").textContent = "👤 顧客 (Guest)";
+
+      const roleBtn = document.getElementById("roleBtn");
+      roleBtn.textContent = "🔑 管理員登入";
+      roleBtn.onclick = openLoginModal;
+
+      document.getElementById("adminTabBtn").style.display = "none";
+      alert("已成功登出。");
+      switchTab('menu');
+    }
+
+    /* ==========================================
+       Menu Logic & Category Filter
+       ========================================== */
+    function filterCategory(cat, btnElement) {
+      currentCategoryFilter = cat;
+      const filterBtns = document.querySelectorAll(".filter-btn");
+      filterBtns.forEach(btn => btn.classList.remove("active"));
+      if (btnElement) btnElement.classList.add("active");
+      renderMenu();
+    }
+
+    function renderMenu() {
+      const grid = document.getElementById("menuGrid");
+      grid.innerHTML = "";
+
+      const filteredItems = currentCategoryFilter === 'All' 
+        ? menuItems 
+        : menuItems.filter(item => item.category === currentCategoryFilter);
+
+      filteredItems.forEach(item => {
+        const isMainDish = (item.category === "Noodles" || item.category === "Rice");
+        const card = document.createElement("div");
+        card.className = "menu-card";
+        
+        let comboHtml = "";
+        if (isMainDish) {
+          comboHtml = `
+            <div class="combo-section">
+              <label class="combo-checkbox">
+                <input type="checkbox" id="combo-check-${item.id}" onchange="toggleComboOptions(${item.id})">
+                加 $120 升級套餐
+              </label>
+              <div class="combo-options" id="combo-options-${item.id}">
+                <div class="combo-select-group">
+                  <select id="soup-sal-name-${item.id}">
+                    <option value="主廚濃湯">主廚濃湯</option>
+                    <option value="鮮採沙拉">鮮採沙拉</option>
+                  </select>
+                </div>
+                <div class="combo-select-group">
+                  <select id="drink-name-${item.id}">
+                    <option value="紅茶">紅茶</option>
+                    <option value="蘋果醋">蘋果醋</option>
+                    <option value="咖啡">咖啡</option>
+                  </select>
+                  <select id="drink-temp-${item.id}">
+                    <option value="冷">冷</option>
+                    <option value="熱">熱</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div>
+            <span class="card-category-tag">${categoryNames[item.category] || item.category}</span>
+            <div class="card-title">${escapeHtml(item.name)}</div>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:8px;">${escapeHtml(item.description || '')}</p>
+            <div class="card-price">NT$ ${item.price}</div>
+            ${comboHtml}
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="addToCart(${item.id})">🛒 加入購物車</button>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function toggleComboOptions(itemId) {
+      const checkbox = document.getElementById(`combo-check-${itemId}`);
+      const options = document.getElementById(`combo-options-${itemId}`);
+      if (checkbox && checkbox.checked) {
+        options.classList.add("active");
+      } else if (options) {
+        options.classList.remove("active");
+      }
+    }
+
+    function addToCart(itemId) {
+      const item = menuItems.find(i => i.id === itemId);
+      if (!item) return;
+
+      const comboCheck = document.getElementById(`combo-check-${itemId}`);
+      const isCombo = comboCheck ? comboCheck.checked : false;
+
+      let finalPrice = item.price;
+      let comboDetails = null;
+
+      if (isCombo) {
+        finalPrice += 120;
+        const side = document.getElementById(`soup-sal-name-${itemId}`).value;
+        const drink = document.getElementById(`drink-name-${itemId}`).value;
+        const temp = document.getElementById(`drink-temp-${itemId}`).value;
+        comboDetails = `${side}, ${drink}/${temp}`;
+      }
+
+      const existingIndex = cart.findIndex(c => c.itemId === itemId && c.comboDetails === comboDetails);
+
+      if (existingIndex > -1) {
+        cart[existingIndex].qty += 1;
+      } else {
+        cart.push({
+          itemId: item.id,
+          name: item.name,
+          price: finalPrice,
+          isCombo: isCombo,
+          comboDetails: comboDetails,
+          qty: 1
+        });
+      }
+
+      if (comboCheck) {
+        comboCheck.checked = false;
+        toggleComboOptions(itemId);
+      }
+
+      renderCart();
+      alert(`已將「${item.name}」加入購物車！`);
+    }
+
+    /* ==========================================
+       Cart & Service Fee Logic
+       ========================================== */
+    function renderCart() {
+      const tbody = document.getElementById("cartTableBody");
+      tbody.innerHTML = "";
+      
+      let subtotal = 0;
+      let totalQty = 0;
+
+      cart.forEach((item, index) => {
+        const itemTotal = item.price * item.qty;
+        subtotal += itemTotal;
+        totalQty += item.qty;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${escapeHtml(item.name)}</strong></td>
+          <td>${item.isCombo ? `<span style="color:var(--primary); font-size:0.85rem; font-weight:600;">+ $120 套餐 (${item.comboDetails})</span>` : '<span style="color:var(--text-muted); font-size:0.85rem;">單點</span>'}</td>
+          <td>NT$ ${item.price}</td>
+          <td>
+            <button class="btn btn-outline btn-sm" onclick="updateQty(${index}, -1)" style="padding:2px 8px;">-</button>
+            <span style="margin: 0 6px; font-weight:600;">${item.qty}</span>
+            <button class="btn btn-outline btn-sm" onclick="updateQty(${index}, 1)" style="padding:2px 8px;">+</button>
+          </td>
+          <td>NT$ ${itemTotal}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="removeFromCart(${index})">刪除</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      if (cart.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:24px;">購物車空空如也，快去選擇美味蔬食吧！</td></tr>`;
+      }
+
+      // 5% Service Charge calculation with NSYSU staff/student waiver
+      const isNsysu = document.getElementById("nsysuDiscount") ? document.getElementById("nsysuDiscount").checked : false;
+      const serviceFee = isNsysu ? 0 : Math.round(subtotal * 0.05);
+      const total = subtotal + serviceFee;
+
+      document.getElementById("cartSubtotal").textContent = `NT$ ${subtotal}`;
+      document.getElementById("cartServiceFee").textContent = `NT$ ${serviceFee}`;
+      document.getElementById("cartTotal").textContent = `NT$ ${total}`;
+      document.getElementById("cartCount").textContent = totalQty;
+    }
+
+    function updateQty(index, delta) {
+      cart[index].qty += delta;
+      if (cart[index].qty <= 0) {
+        cart.splice(index, 1);
+      }
+      renderCart();
+    }
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      renderCart();
+    }
+
+    function checkout() {
+      if (cart.length === 0) {
+        alert("購物車是空的，無法結帳！");
+        return;
+      }
+
+      const remark = document.getElementById("cartRemark").value.trim() || "無";
+      const payment = document.querySelector('input[name="paymentMethod"]:checked').value;
+      const isNsysu = document.getElementById("nsysuDiscount").checked;
+
+      let subtotal = 0;
+      const orderItems = cart.map(item => {
+        subtotal += item.price * item.qty;
+        let displayName = item.name;
+        if (item.isCombo) {
+          displayName += ` (加套餐: ${item.comboDetails})`;
+        }
+        return {
+          name: displayName,
+          price: item.price,
+          qty: item.qty
+        };
+      });
+
+      const serviceFee = isNsysu ? 0 : Math.round(subtotal * 0.05);
+      const total = subtotal + serviceFee;
+
+      const now = new Date();
+      const timeString = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      const orderId = `ORD-${Date.now().toString().slice(-6)}`;
+
+      const newOrder = {
+        id: orderId,
+        time: timeString,
+        items: orderItems,
+        subtotal,
+        serviceFee,
+        total,
+        payment,
+        remark: isNsysu ? `[中山教職員生免服務費] ${remark}` : remark
+      };
+
+      orders.unshift(newOrder);
+
+      alert(`🎉 訂單送出成功！\n訂單編號：${orderId}\n小計：NT$ ${subtotal}\n服務費：NT$ ${serviceFee}\n總金額：NT$ ${total}\n感謝您的點餐！`);
+
+      cart = [];
+      document.getElementById("cartRemark").value = "";
+      document.getElementById("nsysuDiscount").checked = false;
+      renderCart();
+      renderAdminDashboard();
+    }
+
+    /* ==========================================
+       Reservation Handling
+       ========================================== */
+    function handleReservationSubmit(event) {
+      event.preventDefault();
+
+      if (isHolidayClosed) {
+        alert("目前節假日暫不開放線上訂位！");
+        return;
+      }
+
+      const timeSelect = document.getElementById("resTime");
+      if (!timeSelect.value) {
+        alert("請選擇有效的預約時間！");
+        return;
+      }
+
+      const name = document.getElementById("resName").value.trim();
+      const phone = document.getElementById("resPhone").value.trim();
+      const date = document.getElementById("resDate").value;
+      const time = timeSelect.value;
+      const guests = document.getElementById("resGuests").value;
+      const notes = document.getElementById("resNotes").value.trim() || "無";
+
+      const newRes = {
+        id: Date.now(),
+        name,
+        phone,
+        date,
+        time,
+        guests,
+        notes
+      };
+
+      reservations.push(newRes);
+      alert(`🎉 訂位成功！\n預約人：${name}\n日期：${date} ${time}\n人數：${guests}\n期待您的蒞臨！`);
+
+      document.getElementById("reservationForm").reset();
+      setupDateMinAttribute();
+      renderAdminDashboard();
+    }
+
+    /* ==========================================
+       Admin Controls & Analytics
+       ========================================== */
+    function toggleHolidayMode(checked) {
+      isHolidayClosed = checked;
+      const banner = document.getElementById("holidayBanner");
+      const formCard = document.getElementById("reservationFormCard");
+
+      if (isHolidayClosed) {
+        banner.style.display = "block";
+        formCard.style.display = "none";
+      } else {
+        banner.style.display = "none";
+        formCard.style.display = "block";
+      }
+    }
+
+    function renderAdminDashboard() {
+      renderAdminStats();
+      renderAdminReservations();
+      renderAdminMenu();
+      renderAdminOrders();
+    }
+
+    function renderAdminStats() {
+      const todayStr = getTodayString();
+      const todayRes = reservations.filter(r => r.date === todayStr);
+
+      document.getElementById("statTotalTables").textContent = `${todayRes.length} 筆`;
+
+      let totalGuestsCount = 0;
+      todayRes.forEach(r => {
+        let count = 1;
+        if (r.guests.includes("1位")) count = 1;
+        else if (r.guests.includes("2位")) count = 2;
+        else if (r.guests.includes("4位")) count = 4;
+        else if (r.guests.includes("6位")) count = 6;
+        totalGuestsCount += count;
+      });
+
+      document.getElementById("statTotalGuests").textContent = `${totalGuestsCount} 人`;
+    }
+
+    function renderAdminReservations() {
+      const tbody = document.getElementById("adminResTableBody");
+      tbody.innerHTML = "";
+
+      if (reservations.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">尚無訂位紀錄</td></tr>`;
+        return;
+      }
+
+      const sorted = [...reservations].sort((a,b) => (a.date + a.time) > (b.date + b.time) ? 1 : -1);
+
+      sorted.forEach(res => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${escapeHtml(res.name)}</strong></td>
+          <td>${escapeHtml(res.phone)}</td>
+          <td>${res.date}</td>
+          <td><span style="font-weight:600; color:var(--primary);">${res.time}</span></td>
+          <td>${res.guests}</td>
+          <td>${escapeHtml(res.notes)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderAdminMenu() {
+      const tbody = document.getElementById("adminMenuTableBody");
+      tbody.innerHTML = "";
+
+      menuItems.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><span class="card-category-tag">${categoryNames[item.category] || item.category}</span></td>
+          <td><strong>${escapeHtml(item.name)}</strong></td>
+          <td>NT$ ${item.price}</td>
+          <td>${escapeHtml(item.description || '')}</td>
+          <td>
+            <button class="btn btn-outline btn-sm" onclick="openMenuModal(${item.id})">編輯</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteMenuItem(${item.id})">刪除</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderAdminOrders() {
+      const tbody = document.getElementById("adminOrderTableBody");
+      tbody.innerHTML = "";
+
+      if (orders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">尚無點餐訂單紀錄</td></tr>`;
+        return;
+      }
+
+      orders.forEach(order => {
+        const itemsStr = order.items.map(i => `${i.name} x${i.qty}`).join('<br>');
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>
+            <strong>${order.id}</strong><br>
+            <span style="font-size:0.8rem; color:var(--text-muted);">${order.time}</span>
+          </td>
+          <td>${itemsStr}</td>
+          <td><strong>NT$ ${order.total}</strong> <br><small style="color:var(--text-muted);">(含5%服務費: $${order.serviceFee})</small></td>
+          <td><span class="user-tag ${order.payment === 'Line Pay' ? 'admin' : 'guest'}">${order.payment}</span></td>
+          <td>${escapeHtml(order.remark)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* ==========================================
+       Menu CRUD Logic
+       ========================================== */
+    function openMenuModal(itemId = null) {
+      const modal = document.getElementById("menuModal");
+      const title = document.getElementById("menuModalTitle");
+      
+      if (itemId) {
+        const item = menuItems.find(i => i.id === itemId);
+        if (!item) return;
+        title.textContent = "編輯餐點品項";
+        document.getElementById("editItemId").value = item.id;
+        document.getElementById("itemCategory").value = item.category;
+        document.getElementById("itemName").value = item.name;
+        document.getElementById("itemPrice").value = item.price;
+        document.getElementById("itemDesc").value = item.description || '';
+      } else {
+        title.textContent = "新增餐點品項";
+        document.getElementById("editItemId").value = "";
+        document.getElementById("itemCategory").value = "Noodles";
+        document.getElementById("itemName").value = "";
+        document.getElementById("itemPrice").value = "";
+        document.getElementById("itemDesc").value = "";
+      }
+
+      modal.classList.add("active");
+    }
+
+    function closeMenuModal() {
+      document.getElementById("menuModal").classList.remove("active");
+    }
+
+    function handleSaveMenuItem(event) {
+      event.preventDefault();
+      const id = document.getElementById("editItemId").value;
+      const category = document.getElementById("itemCategory").value;
+      const name = document.getElementById("itemName").value.trim();
+      const price = parseFloat(document.getElementById("itemPrice").value);
+      const description = document.getElementById("itemDesc").value.trim();
+
+      if (id) {
+        const item = menuItems.find(i => i.id == id);
+        if (item) {
+          item.category = category;
+          item.name = name;
+          item.price = price;
+          item.description = description;
+        }
+      } else {
+        const newId = menuItems.length ? Math.max(...menuItems.map(i => i.id)) + 1 : 1;
+        menuItems.push({
+          id: newId,
+          category,
+          name,
+          price,
+          description
+        });
+      }
+
+      closeMenuModal();
+      renderMenu();
+      renderAdminMenu();
+      alert("菜單儲存成功！已即時同步至前台線上菜單。");
+    }
+
+    function deleteMenuItem(itemId) {
+      if (confirm("確定要刪除此品項嗎？")) {
+        menuItems = menuItems.filter(i => i.id !== itemId);
+        renderMenu();
+        renderAdminMenu();
+      }
+    }
+
+    /* ==========================================
+       Utilities
+       ========================================== */
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>"']/g, function(m) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        }[m];
+      });
+    }
+  </script>
+</body>
+</html>
